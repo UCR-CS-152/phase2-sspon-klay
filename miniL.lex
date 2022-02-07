@@ -64,8 +64,8 @@ IDENT	{EXP}|({EXP}{UNDER}+({CHAR}|{DIGIT})+)
 "<="		{ return LTE ; colCount += 2 ; }
 ">="		{ return GTE ; colCount += 2 ; }
 
-{IDENT}		{ printf("IDENT %s\n", yytext) ; colCount += strlen(yytext) ; }
-{DIGIT}+	{ printf("NUMBER %s\n", yytext) ; colCount += strlen(yytext) ; }
+{IDENT}		{ yylval.op_val = yytext ; return IDENT ; colCount += strlen(yytext) ; }
+{DIGIT}+	{ yylval.int_val= atoi(yytext) ; return NUMBER ; colCount += strlen(yytext) ; }
 
 ";"		{ return SEMICOLON ; colCount++ ; }
 ":"		{ return COLON ; colCount++ ; }

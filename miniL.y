@@ -11,14 +11,15 @@ extern FILE* yyin ;
 
 %union{
   /* put your types here */
+	int int_val ;
+	string* op_val ;
 }
 
 %error-verbose
 %locations
 
-%token <ival> NUMBER
-%token <identval> IDENT
-
+%token <int_val> NUMBER
+%token <op_val> IDENT
 %token FUNCTION
 %token READ
 %token BEGIN_PARAMS
@@ -41,22 +42,21 @@ extern FILE* yyin ;
 %token CONTINUE
 %token BREAK
 %token WRITE
-%token NOT
+%right NOT
 %token TRUE
 %token FALSE
 %token ADD
 %token RETURN
-//%token NUMBER
-%token SUB
-%token MULT
-%token DIV
-%token MOD
-%token EQ
-%token NEQ
-%token LT
-%token GT
-%token LTE
-%token GTE
+%left SUB
+%left MULT
+%left DIV
+%left MOD
+%left EQ
+%left NEQ
+%left LT
+%left GT
+%left LTE
+%left GTE
 %token SEMICOLON
 %token COLON
 %token COMMA
@@ -64,7 +64,7 @@ extern FILE* yyin ;
 %token R_PAREN
 %token L_SQUARE_BRACKET
 %token R_SQUARE_BRACKET
-%token ASSIGN
+%right ASSIGN
 
 
 /* %start program */
@@ -78,11 +78,11 @@ extern FILE* yyin ;
         | Function Functions {printf("Functions -> Function Functions\n");}
         ;
 
-  Identifier: IDENT {printf("ident -> IDENT %s\n", yylval);};
+  Identifier: IDENT {printf("ident -> IDENT %s\n", yylval.op_val);};
 
   Identifiers: Identifier {printf("identifiers -> identifier\n");};
 
-  Function: FUNCTION Identifier SEMICOLON BEGIN_PARAMS Declarations END_PARAMS BEGIN_LOCALS Declarations END_LOCALS BEGIN_BODY Statements
+  Function: FUNCTION Identifier SEMICOLON BEGIN_PARAMS Declarations END_PARAMS BEGIN_LOCALS Declarations END_LOCALS BEGIN_BODY Statements END_BODY { printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY\n") ; }
 
   Declarations: %empty {printf("Declarations -> epsilon\n");} 
         | DECLARATION SEMICOLON Declarations {printf("Declarations -> Declaration SEMICOLON Declaraions\n");}
@@ -100,11 +100,15 @@ extern FILE* yyin ;
         | %empty {printf("Elsestatement -> epsilon\n");}
         ;
 
-  Statement: Var ASSIGN Expression{printf("Statement -> Var ASSIGN Expression\n");} 
-        | IF BoolExp THEN Statements ElseStatement ENDIF{printf("Statement -> IF BoolExp THEN Statements ElseStatement ENDIF\n");} 
-        | WHILE BoolExp BEGINLOOP Statements ENDLOOP{printf("Statement -> WHILE BoolExp BEGINLOOP Statements ENDLOOP\n");} 
-        | DO BEGINLOOP Statements ENDLOOP WHILE BoolExp{printf("Statement -> DO BEGINLOOP Statements ENDLOOP WHILE BoolExp\n");} 
-     //   | READ Var {printf("Statement -> READ Var\n");}
+  Statement: Var ASSIGN Expression {printf("Statement -> Var ASSIGN Expression\n");} 
+        | IF BoolExp THEN Statements ElseStatement ENDIF {printf("Statement -> IF BoolExp THEN Statements ElseStatement ENDIF\n");} 
+        | WHILE BoolExp BEGINLOOP Statements ENDLOOP {printf("Statement -> WHILE BoolExp BEGINLOOP Statements ENDLOOP\n");} 
+        | DO BEGINLOOP Statements ENDLOOP WHILE BoolExp {printf("Statement -> DO BEGINLOOP Statements ENDLOOP WHILE BoolExp\n");} 
+        | READ Var {printf("Statement -> READ Var\n");}
+	| WRITE Var {printf("Statement -> WRITE Var\n") ;}
+	| CONTINUE {printf("Statement -> CONTINUE\n") ; }
+	| BREAK {printf("Statement -> BREAK\n") ; }
+	| RETURN Expression { printf("Statement -> RETURN Expression\n") ; }
         ;
 
   BoolExp: Expression Comp Expression {printf("BoolExp -> Expression comp Expression\n");} 
@@ -121,21 +125,22 @@ extern FILE* yyin ;
 
   Expression: MultExp{printf("Expression -> MultExp\n");} 
               | MultExp ADD Expression{printf("Expression -> MultExp ADD Expression\n");} 
-              | MultExp ADD Expression{printf("Expression -> MultExp SUB Expression\n");}
+              | MultExp SUB Expression{printf("Expression -> MultExp SUB Expression\n");}
               ;
-
+  Expressions: %empty 
+	  | COMMA Expression Expressions
+          ;
   MultExp: Term {printf("MultExp -> Term\n");} 
-          | MultExp Term MULT MultExp{printf("MultExp -> Term MULT MultExp\n");} 
-          | MultExp Term DIV MultExp{printf("MultExp -> Term DIV MultExp\n");} 
-          | MultExp Term MOD MultExp{printf("MultExp -> Term MOD MultExp\n");
+          | Term MULT Term{printf("MultExp -> Term MULT Term\n");} 
+          | Term DIV Term{printf("MultExp -> Term DIV Term\n");} 
+          | Term MOD Term{printf("MultExp -> Term MOD Term\n");
           };
 
   Term: Var {printf("Term -> Var\n");} 
-        | NUMBER {printf("Term -> NUMBER\n");} 
+        | NUMBER {printf("Term -> NUMBER %d\n", yylval.int_val);} 
         | L_PAREN Expression R_PAREN {printf("Term -> L_PAREN Expression R_PAREN\n");} 
-        | Identifier L_PAREN Expression R_PAREN {printf("Term -> L_PAREN Expression COMMA R_PAREN\n");} 
-        | Identifier L_PAREN Expression COMMA R_PAREN {printf("Term -> L_PAREN Expression COMMA R_PAREN\n");} 
-        | Identifier L_PAREN R_PAREN {printf("Term -> L_PAREN R_PAREN\n");}
+        | Identifier L_PAREN Expression R_PAREN {printf("Term -> L_PAREN Expression R_PAREN\n");} 
+        | Identifier L_PAREN Expression Expressions R_PAREN {printf("Term -> L_PAREN Expressions R_PAREN\n");} 
         ;
 
   Var: Identifier {printf("Var -> Identifier\n");} 
@@ -145,12 +150,13 @@ extern FILE* yyin ;
 %% 
 
 int main(int argc, char **argv) {
-	yyin = stdin ;
-	do {
-		printf("Parse. \n") ;
-		yyparse() ;
-	} while (!feof(yyin)) ;
-	printf("Done.\n") ;
+  if (argc > 1) {
+    yyin = fopen(argv[1], "r");
+    if(yyin == 0){
+      printf("Error open file %s\n", argv[0]);
+    }
+  }
+   yyparse();
    return 0;
 }
 

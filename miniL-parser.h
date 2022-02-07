@@ -103,8 +103,10 @@ union YYSTYPE
 #line 12 "miniL.y" /* yacc.c:1909  */
 
   /* put your types here */
+	int int_val ;
+	string* op_val ;
 
-#line 108 "miniL-parser.h" /* yacc.c:1909  */
+#line 110 "miniL-parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

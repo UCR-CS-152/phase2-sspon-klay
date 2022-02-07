@@ -1036,12 +1036,12 @@ YY_RULE_SETUP
 case 37:
 YY_RULE_SETUP
 #line 67 "miniL.lex"
-{ printf("IDENT %s\n", yytext) ; colCount += strlen(yytext) ; }
+{ yylval.op_val = yytext ; return IDENT ; colCount += strlen(yytext) ; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
 #line 68 "miniL.lex"
-{ printf("NUMBER %s\n", yytext) ; colCount += strlen(yytext) ; }
+{ yylval.int_val= atoi(yytext) ; return NUMBER ; colCount += strlen(yytext) ; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
