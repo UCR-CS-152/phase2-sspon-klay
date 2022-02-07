@@ -1,9 +1,12 @@
     /* cs152-miniL phase2 */
 %{
 void yyerror(const char *msg);
-#include "calc.tab.h"
+#include "y.tab.h"
 #include <stdio.h>
 extern int yylex();
+extern int yyparse() ;
+extern int yyloc() ;
+extern FILE* yyin ;
 %}
 
 %union{
@@ -17,6 +20,7 @@ extern int yylex();
 %token <identval> IDENT
 
 %token FUNCTION
+%token READ
 %token BEGIN_PARAMS
 %token END_PARAMS
 %token BEGIN_LOCALS
@@ -74,7 +78,7 @@ extern int yylex();
         | Function Functions {printf("Functions -> Function Functions\n");}
         ;
 
-  Identifier: IDENT {printf("ident -> IDENT %s\n", yylval.identval);};
+  Identifier: IDENT {printf("ident -> IDENT %s\n", yylval);};
 
   Identifiers: Identifier {printf("identifiers -> identifier\n");};
 
@@ -141,17 +145,16 @@ extern int yylex();
 %% 
 
 int main(int argc, char **argv) {
-  if (argc > 1) {
-    yyin = fopen(argv[1], "r");
-    if(yyin == 0){
-      rintf("Error open file %s\n", argv[0]);
-    }
-  }
-   yyparse();
+	yyin = stdin ;
+	do {
+		printf("Parse. \n") ;
+		yyparse() ;
+	} while (!feof(yyin)) ;
+	printf("Done.\n") ;
    return 0;
 }
 
 void yyerror(const char *msg) {
     /* implement your error handling */
-    printf("** Line %d: %s\n", yyloc.first_line, msg);
+  //  printf("** Line %d: %s\n", yyloc, msg);
 }

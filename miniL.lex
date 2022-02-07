@@ -6,7 +6,7 @@
 
 	int lineCount = 1 ;
 	int colCount = 1 ;
-  // #include "calc.tab.h"
+   #include "y.tab.h"
    extern int yylex();
 
 %}
@@ -86,10 +86,3 @@ IDENT	{EXP}|({EXP}{UNDER}+({CHAR}|{DIGIT})+)
 {EXP}{UNDER}+	{ printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", lineCount, colCount, yytext) ; return 1 ; }
 .		{ printf("Error at line %d, column %d: Unrecognized symbol \"%s\"\n", lineCount, ++colCount, yytext) ; return 1 ; }
 
-%%
-	/* C functions used in lexer */
-
-int main(int argc, char ** argv)
-{
-   yylex();
-}
