@@ -1,22 +1,24 @@
     /* cs152-miniL phase2 */
+
+%error-verbose
+%locations
+
 %{
-void yyerror(const char *msg);
 #include "y.tab.h"
 #include <stdio.h>
+void yyerror(const char *msg);
 extern int yylex();
 extern int yyparse() ;
 extern int yyloc() ;
 extern FILE* yyin ;
 %}
 
+
 %union{
   /* put your types here */
 	int int_val ;
 	string* op_val ;
 }
-
-%error-verbose
-%locations
 
 %token <int_val> NUMBER
 %token <op_val> IDENT
@@ -92,7 +94,7 @@ extern FILE* yyin ;
         | Identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {printf("Declaration -> Identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");}
         ;
 
-  Statements: %empty{printf("Statemnets -> epsilon\n");} 
+  Statements: %empty{printf("Statements -> epsilon\n");} 
         | Statement SEMICOLON Statements {printf("Statements -> Statement SEMICOLON Statements\n");}
         ;
 
@@ -162,5 +164,5 @@ int main(int argc, char **argv) {
 
 void yyerror(const char *msg) {
     /* implement your error handling */
-  //  printf("** Line %d: %s\n", yyloc, msg);
+    printf("**Error at Line %d**: %s\n", yylloc.last_line, msg);
 }

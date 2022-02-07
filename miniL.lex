@@ -8,6 +8,7 @@
 	int colCount = 1 ;
    #include "y.tab.h"
    extern int yylex();
+   extern YYLTYPE yylloc ;
 
 %}
 
@@ -76,13 +77,10 @@ IDENT	{EXP}|({EXP}{UNDER}+({CHAR}|{DIGIT})+)
 "]"		{ return R_SQUARE_BRACKET ; colCount++ ; }
 ":="		{ return ASSIGN ; colCount += 2 ; }
 
-{NEWLINE}	{ lineCount++ ; colCount = 0 ; }
+{NEWLINE}	{ yylloc.last_line++ ; colCount = 0 ; }
 {EMPTY}		{ colCount++ ;}
 {TAB}+		{ colCount += 8 ; }
-{RTRN}+		{ lineCount++ ; colCount = 0 ; }
-{COMM}{ANY}*{NEWLINE} { lineCount++ ; colCount = 0 ; }
+{RTRN}+		{ yylloc.last_line++ ; colCount = 0 ; }
+{COMM}{ANY}*{NEWLINE} { yylloc.last_line++ ; colCount = 0 ; }
 
-{DIGIT}{IDENT}	{ printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", lineCount, colCount, yytext) ; return 1 ; }
-{EXP}{UNDER}+	{ printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", lineCount, colCount, yytext) ; return 1 ; }
-.		{ printf("Error at line %d, column %d: Unrecognized symbol \"%s\"\n", lineCount, ++colCount, yytext) ; return 1 ; }
 
